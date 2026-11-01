@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Star, Calendar } from "lucide-react";
+import BorrowingBooks from "@/app/Components/BorrowingBooks";
 
 export interface IParams {
   params: Promise<{
@@ -122,12 +123,8 @@ const DetailsPage = async ({ params }: IParams) => {
             </div>
 
             <div className="pt-6">
-              <button
-                type="button"
-                className="w-full py-3.5 rounded-xl font-semibold text-sm bg-[#1a62ff] hover:bg-blue-700 text-white shadow-sm transition cursor-pointer"
-              >
-                Borrow This Book
-              </button>
+             <BorrowingBooks bookDetails={bookDetails}></BorrowingBooks>
+              
             </div>
           </div>
 

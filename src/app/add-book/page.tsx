@@ -97,7 +97,6 @@ const AddBook = () => {
         in_stock: Boolean(formData.in_stock),
         cover_image: finalImageUrl,
         description: formData.description,
-        // Added user email and name from session
         user_name: user?.name || "Anonymous",
         user_email: user?.email || "",
       };
