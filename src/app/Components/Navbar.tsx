@@ -34,7 +34,7 @@ const Navbar = () => {
             { name: 'All Books', href: '/all-books' },
             { name: 'Add Book', href: '/add-book' },
             { name: 'My Books', href: `/my-books/${user.email}` },
-            { name: 'My Borrows', href: '/my-borrows' },
+            { name: 'My Borrows', href: `/my-borrows/${user.email}` },
         ]
         : [
             { name: 'Home', href: '/' },
