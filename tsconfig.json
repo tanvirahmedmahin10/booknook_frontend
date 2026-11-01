@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/app/Components/Swiper.js"  ],
   "exclude": ["node_modules"]
 }
