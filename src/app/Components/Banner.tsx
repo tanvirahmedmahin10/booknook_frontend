@@ -1,10 +1,15 @@
 import React from 'react';
-import BookSlider from './Swiper';
+
+import SwiperFetch from './SwiperFetch';
+import FeatureSection from './FeatureSection';
+import BorrowingWorks from './BrowingWorks';
 
 const Banner = () => {
     return (
         <div>
-            <BookSlider></BookSlider>
+           <SwiperFetch></SwiperFetch>
+           <FeatureSection></FeatureSection>
+           <BorrowingWorks></BorrowingWorks>
         </div>
     );
 };
