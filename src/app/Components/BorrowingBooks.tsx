@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { IBook } from '../all-books/[bookId]/page';
-import { authClient } from '@/lib/auth-client';
+import React, { useState, useEffect } from "react";
+import { IBook } from "../all-books/[bookId]/page";
+import { authClient } from "@/lib/auth-client";
 
 interface BorrowingBooksProps {
   bookDetails: IBook;
@@ -14,51 +14,43 @@ const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Default borrowDate to today (YYYY-MM-DD)
   const todayStr = new Date().toISOString().split("T")[0];
   const [borrowDate, setBorrowDate] = useState(todayStr);
   const [returnDate, setReturnDate] = useState("");
 
-  const { 
-    data: session, 
-    isPending,
-  } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user;
   const bookId = bookDetails?._id;
+useEffect(() => {
+  const checkBorrowStatus = async () => {
+    if (!user?.email || !bookId) {
+      setIsCheckingStatus(false);
+      return;
+    }
 
-  const allInfo = {
-    ...bookDetails,
-    user_name: user?.name || "Anonymous",
-    user_email: user?.email || "",
-    borrow_date: borrowDate,
-    return_date: returnDate,
+    try {
+      const res = await fetch(
+        `http://localhost:8000/my-borrows/${encodeURIComponent(user.email)}/${bookId}`
+      );
+      if (res.ok) {
+        const result = await res.json();
+        setIsBorrowed(Boolean(result?.isBorrowed));
+      } else {
+        setIsBorrowed(false);
+      }
+    } catch (error) {
+      console.error("Error verifying borrow state:", error);
+      setIsBorrowed(false);
+    } finally {
+      setIsCheckingStatus(false);
+    }
   };
 
-  useEffect(() => {
-    const checkBorrowStatus = async () => {
-      if (!user?.email || !bookId) {
-        setIsCheckingStatus(false);
-        return;
-      }
-
-      try {
-        const res = await fetch(`http://localhost:8000/my-borrows/${user.email}/${bookId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setIsBorrowed(data.isBorrowed);
-        }
-      } catch (error) {
-        console.error("Error verifying borrow state:", error);
-      } finally {
-        setIsCheckingStatus(false);
-      }
-    };
-
-    if (!isPending) {
-      checkBorrowStatus();
-    }
-  }, [user?.email, bookId, isPending]);
+  if (!isPending) {
+    checkBorrowStatus();
+  }
+}, [user?.email, bookId, isPending]);
 
   const handleConfirmBorrow = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +71,21 @@ const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
     }
 
     setIsLoading(true);
+    const { _id, ...restBookDetails } = bookDetails || {};
+
+    const payload = {
+      book_id: _id, 
+      ...restBookDetails,
+
+      user_id: user?.id || null,
+      user_name: user?.name || "Anonymous",
+      user_email: user?.email || "",
+      user_image: user?.image || null,
+      borrow_date: borrowDate,
+      return_date: returnDate,
+      status: "borrowed",
+      created_at: new Date().toISOString(),
+    };
 
     try {
       const res = await fetch(`http://localhost:8000/my-borrows`, {
@@ -86,18 +93,20 @@ const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(allInfo),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         throw new Error(`Failed to borrow: ${res.statusText}`);
       }
+
       setIsBorrowed(true);
       setIsModalOpen(false);
       const data = await res.json();
       console.log("Borrow successful:", data);
     } catch (error) {
       console.error("Borrow error:", error);
+      alert("Failed to confirm borrow. Please try again.");
     } finally {
       setIsLoading(false);
     }

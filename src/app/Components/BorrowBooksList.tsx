@@ -28,7 +28,7 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
     setReturningId(targetId as string);
 
     try {
-      const res = await fetch(`http://localhost:8000/my-borrows/${targetId}`, {
+      const res = await fetch(`http://localhost:8000/my-borrows/${book.user_email}/${targetId}`, {
         method: 'DELETE',
       });
 
@@ -107,7 +107,6 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
                       key={currentId}
                       className="group transition-colors hover:bg-slate-50/60"
                     >
-                      {/* Image & Title */}
                       <td className="py-4 pl-6 pr-3">
                         <div className="flex items-center gap-4">
                           <div className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200/60">
@@ -140,7 +139,7 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
                         </div>
                       </td>
 
-                      {/* Category */}
+
                       <td className="px-4 py-4 whitespace-nowrap">
                         {book.category ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/10">
@@ -151,17 +150,14 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
                         )}
                       </td>
 
-                      {/* Borrow Date */}
                       <td className="px-4 py-4 whitespace-nowrap text-slate-600 font-medium text-xs">
                         {book.borrow_date || 'N/A'}
                       </td>
 
-                      {/* Return Date */}
                       <td className="px-4 py-4 whitespace-nowrap text-slate-600 font-medium text-xs">
                         {book.return_date || 'N/A'}
                       </td>
 
-                      {/* Return Button */}
                       <td className="py-4 pl-3 pr-6 text-right whitespace-nowrap">
                         <button
                           type="button"

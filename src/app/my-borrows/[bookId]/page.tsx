@@ -1,8 +1,6 @@
 import { IBook, IParams } from '@/app/all-books/[bookId]/page';
-import MyBooksList from '@/app/Components/MyBooksList';
-import EmptyBooks from '@/app/Components/EmptyBooks';
+
 import { notFound } from 'next/navigation';
-import React from 'react';
 import BorrowBooksList from '@/app/Components/BorrowBooksList';
 
 const Page = async ({ params }: IParams) => {
@@ -23,10 +21,6 @@ const Page = async ({ params }: IParams) => {
     books = Array.isArray(data) ? data : data?.data || [data];
   } catch {
     notFound();
-  }
-
-  if (!books || books.length === 0) {
-    return <EmptyBooks />;
   }
 
   return <BorrowBooksList borrowedBooks={books} />;
