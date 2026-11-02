@@ -1,31 +1,44 @@
-'use client'
+'use client';
+
 import { IBook } from '@/app/all-books/[bookId]/page';
 import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 
 const DeleteButtons = ({ book }: { book: IBook }) => {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const [isDeleting, setIsDeleting] = useState(false);
-const route=useRouter()
-  const handleDelete = async () => {
-    
+  const [open, setOpen] = useState(false);
+
+  const router = useRouter();
+
+  const handleOpen = () => {
     if (!user?.email) {
-      alert('You must be logged in to delete this book.');
+      toast.error('You must be logged in to delete this book.');
       return;
     }
+    setOpen(true);
+  };
 
-    const confirmed = confirm('Are you sure you want to remove this book?');
-    if (!confirmed) return;
-
+  const handleDelete = async () => {
     try {
       setIsDeleting(true);
 
       const res = await fetch(
-        `http://localhost:8000/my-books/${user.email}/${book._id}`,
+        `http://localhost:8000/my-books/${encodeURIComponent(user?.email ?? '')}/${book._id}`,
         {
-          method: 'DELETE', 
+          method: 'DELETE',
         }
       );
 
@@ -33,26 +46,56 @@ const route=useRouter()
         throw new Error('Failed to delete book');
       }
 
-    
+      setOpen(false);
+      toast.success('Successfully Deleted');
+      router.refresh();
     } catch (error) {
       console.error(error);
-      alert('An error occurred while deleting the book.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsDeleting(false);
     }
-    route.refresh()
   };
 
   return (
     <div>
-      <button
+      <Button
         type="button"
-        onClick={handleDelete}
+        variant="destructive"
+        onClick={handleOpen}
         disabled={isPending || isDeleting}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
       >
         {isDeleting ? 'Deleting...' : 'Delete'}
-      </button>
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogDescription>
+              Do you really want to remove this book? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

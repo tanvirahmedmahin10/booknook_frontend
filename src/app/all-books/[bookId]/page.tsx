@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Star, Calendar } from "lucide-react";
+import { Star, Calendar, Layers } from "lucide-react";
 import BorrowingBooks from "@/app/Components/BorrowingBooks";
 
 export interface IParams {
@@ -14,6 +14,7 @@ export interface IBook {
   title: string;
   author: string;
   category: string;
+  total_copies: number; 
   published_year: number;
   price: number;
   rating: number;
@@ -21,7 +22,7 @@ export interface IBook {
   cover_image: string;
   description: string;
   user_name?: string;
-  user_email?:string,
+  user_email?: string;
   added_by?: string;
 }
 
@@ -32,8 +33,11 @@ const DetailsPage = async ({ params }: IParams) => {
 
   try {
     const res = await fetch(`http://localhost:8000/all-books/${bookId}`, {
-      cache: "no-store",
-    });
+  cache: "no-store",
+  headers: {
+    authorization: "user logged in",
+  },
+});;
 
     if (!res.ok) notFound();
     bookDetails = await res.json();
@@ -65,7 +69,6 @@ const DetailsPage = async ({ params }: IParams) => {
             )}
           </div>
 
-          
           <div className="flex flex-col justify-between py-1">
             <div className="space-y-4">
               <div>
@@ -73,6 +76,7 @@ const DetailsPage = async ({ params }: IParams) => {
                   {bookDetails.category || "General"}
                 </span>
               </div>
+
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
                   {bookDetails.title}
@@ -82,13 +86,14 @@ const DetailsPage = async ({ params }: IParams) => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 bg-[#f8fafc] rounded-2xl py-3 px-4 text-center items-center border border-slate-100">
+              <div className="grid grid-cols-4 bg-[#f8fafc] rounded-2xl py-3 px-2 text-center items-center border border-slate-100">
                 <div>
                   <span className="text-[11px] text-gray-400 block font-medium">Price</span>
                   <span className="text-sm font-bold text-gray-800">
                     ${bookDetails.price ? Number(bookDetails.price).toFixed(2) : "0.00"}
                   </span>
                 </div>
+
                 <div className="border-x border-slate-200/70">
                   <span className="text-[11px] text-gray-400 block font-medium">Rating</span>
                   <span className="text-sm font-bold text-gray-800 flex items-center justify-center gap-1">
@@ -96,11 +101,20 @@ const DetailsPage = async ({ params }: IParams) => {
                     {bookDetails.rating ?? 4.5}
                   </span>
                 </div>
-                <div>
+
+                <div className="border-r border-slate-200/70">
                   <span className="text-[11px] text-gray-400 block font-medium">Year</span>
                   <span className="text-sm font-bold text-gray-800 flex items-center justify-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     {bookDetails.published_year}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[11px] text-gray-400 block font-medium">Copies</span>
+                  <span className="text-sm font-bold text-gray-800 flex items-center justify-center gap-1">
+                    <Layers className="w-3.5 h-3.5 text-teal-500" />
+                    {bookDetails.total_copies ?? 0}
                   </span>
                 </div>
               </div>
@@ -123,8 +137,7 @@ const DetailsPage = async ({ params }: IParams) => {
             </div>
 
             <div className="pt-6">
-             <BorrowingBooks bookDetails={bookDetails}></BorrowingBooks>
-              
+              <BorrowingBooks bookDetails={bookDetails} />
             </div>
           </div>
 

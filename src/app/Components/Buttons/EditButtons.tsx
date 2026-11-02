@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Pencil, Loader2, Save, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface EditButtonsProps {
   book: IBook;
@@ -127,10 +128,11 @@ const EditButtons = ({ book, onBookUpdated }: EditButtonsProps) => {
         if (onBookUpdated) {
           onBookUpdated({ ...book, ...bookPayload });
         }
+        toast.success('Succefully Edited')
         router.refresh();
       }
     } catch (error) {
-      console.error("Failed to update book:", error);
+      toast.error( error instanceof Error ? error.message : "Failed to update book");
     } finally {
       setIsSubmitting(false);
     }

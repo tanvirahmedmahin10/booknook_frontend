@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { IBook } from '@/app/all-books/[bookId]/page';
 
 export interface IBorrowedBook extends IBook {
   borrow_date?: string;
   return_date?: string;
   borrowId?: string;
+  user_email?: string;
 }
 
 interface Props {
@@ -22,9 +24,6 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
 
   const handleReturnBook = async (book: IBorrowedBook) => {
     const targetId = book.borrowId || book._id;
-    const confirmReturn = window.confirm(`Are you sure you want to return "${book.title}"?`);
-    if (!confirmReturn) return;
-
     setReturningId(targetId as string);
 
     try {
@@ -36,14 +35,14 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
         throw new Error('Failed to return the book');
       }
 
-      
       setBooks((prev) => prev.filter((b) => (b.borrowId || b._id) !== targetId));
       if (onReturnSuccess) {
         onReturnSuccess(targetId as string);
       }
+      toast.success(`"${book.title}" has been returned successfully.`);
     } catch (error) {
       console.error('Error returning book:', error);
-      alert('Could not complete return request. Please try again.');
+      toast.error('Could not complete return request. Please try again.');
     } finally {
       setReturningId(null);
     }
@@ -84,7 +83,6 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
           </p>
         </div>
 
-        {/* Table Container */}
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -138,7 +136,6 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
                           </div>
                         </div>
                       </td>
-
 
                       <td className="px-4 py-4 whitespace-nowrap">
                         {book.category ? (

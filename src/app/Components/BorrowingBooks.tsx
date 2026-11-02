@@ -3,70 +3,107 @@
 import React, { useState, useEffect } from "react";
 import { IBook } from "../all-books/[bookId]/page";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface BorrowingBooksProps {
   bookDetails: IBook;
 }
 
+const getTodayDateString = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
+  const route = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isBorrowed, setIsBorrowed] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const [borrowDate, setBorrowDate] = useState(todayStr);
+  const rawCopies = Number(bookDetails?.total_copies ?? 0);
+  const [copies, setCopies] = useState<number>(
+    Number.isNaN(rawCopies) ? 0 : rawCopies
+  );
+
+  const borrowDate = getTodayDateString();
   const [returnDate, setReturnDate] = useState("");
 
   const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user;
   const bookId = bookDetails?._id;
-useEffect(() => {
-  const checkBorrowStatus = async () => {
-    if (!user?.email || !bookId) {
-      setIsCheckingStatus(false);
+
+  useEffect(() => {
+    const checkBorrowStatus = async () => {
+      if (!user?.email || !bookId) {
+        setIsCheckingStatus(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `http://localhost:8000/my-borrows/${encodeURIComponent(user.email)}/${bookId}`
+        );
+        if (res.ok) {
+          const result = await res.json();
+          setIsBorrowed(Boolean(result?.isBorrowed));
+        } else {
+          setIsBorrowed(false);
+        }
+      } catch (error) {
+        console.error("Error verifying borrow state:", error);
+        setIsBorrowed(false);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    if (!isPending) {
+      checkBorrowStatus();
+    }
+  }, [user?.email, bookId, isPending]);
+
+  const handleButtonClick = () => {
+    if (isBorrowed) {
+      toast.error("This book is already borrowed.");
       return;
     }
-
-    try {
-      const res = await fetch(
-        `http://localhost:8000/my-borrows/${encodeURIComponent(user.email)}/${bookId}`
-      );
-      if (res.ok) {
-        const result = await res.json();
-        setIsBorrowed(Boolean(result?.isBorrowed));
-      } else {
-        setIsBorrowed(false);
-      }
-    } catch (error) {
-      console.error("Error verifying borrow state:", error);
-      setIsBorrowed(false);
-    } finally {
-      setIsCheckingStatus(false);
+    if (!user) {
+      toast.error("Please log in to borrow books.");
+      return;
     }
+    if (copies <= 0) {
+      toast.error("This book is currently out of stock.");
+      return;
+    }
+    setIsModalOpen(true);
   };
-
-  if (!isPending) {
-    checkBorrowStatus();
-  }
-}, [user?.email, bookId, isPending]);
 
   const handleConfirmBorrow = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (copies <= 0) {
+      toast.error("This book is currently out of stock.");
+      return;
+    }
+
     if (isBorrowed) {
-      alert("Already borrowed");
+      toast.error("Already borrowed");
       return;
     }
 
     if (!borrowDate || !returnDate) {
-      alert("Please select both borrow and return dates.");
+      toast.error("Please select both borrow and return dates.");
       return;
     }
 
     if (new Date(returnDate) < new Date(borrowDate)) {
-      alert("Return date cannot be earlier than borrow date.");
+      toast.error("Return date cannot be earlier than borrow date.");
       return;
     }
 
@@ -74,9 +111,8 @@ useEffect(() => {
     const { _id, ...restBookDetails } = bookDetails || {};
 
     const payload = {
-      book_id: _id, 
+      book_id: _id,
       ...restBookDetails,
-
       user_id: user?.id || null,
       user_name: user?.name || "Anonymous",
       user_email: user?.email || "",
@@ -97,42 +133,72 @@ useEffect(() => {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to borrow: ${res.statusText}`);
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || `Failed to borrow: ${res.statusText}`);
       }
-
+      setCopies((prev) => Math.max(0, prev - 1));
       setIsBorrowed(true);
       setIsModalOpen(false);
-      const data = await res.json();
-      console.log("Borrow successful:", data);
+      await res.json();
+      route.refresh();
+      toast.success("Successful Borrow");
     } catch (error) {
       console.error("Borrow error:", error);
-      alert("Failed to confirm borrow. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to confirm borrow. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isDisabled = isPending || isCheckingStatus || !user || isBorrowed;
+  const isAvailable = copies > 0;
+  const isButtonDisabled = isPending || isCheckingStatus;
+
+  const getButtonState = () => {
+    if (isPending || isCheckingStatus) {
+      return {
+        label: "Loading...",
+        className: "bg-slate-200 text-slate-500 cursor-not-allowed",
+      };
+    }
+    if (isBorrowed) {
+      return {
+        label: "Borrowed",
+        className: "bg-emerald-600 text-white cursor-not-allowed opacity-90",
+      };
+    }
+    if (!isAvailable) {
+      return {
+        label: "Not Available",
+        className: "bg-slate-200 text-slate-500 cursor-not-allowed",
+      };
+    }
+    if (!user) {
+      return {
+        label: "Log in to Borrow",
+        className: "bg-[#1a62ff] text-white opacity-50 cursor-pointer",
+      };
+    }
+    return {
+      label: "Borrow This Book",
+      className: "bg-[#1a62ff] hover:bg-blue-700 text-white cursor-pointer",
+    };
+  };
+
+  const { label, className } = getButtonState();
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setIsModalOpen(true)}
-        disabled={isDisabled}
-        className={`w-full py-3.5 rounded-xl font-semibold text-sm shadow-sm transition text-white ${
-          isBorrowed
-            ? "bg-emerald-600 cursor-not-allowed"
-            : "bg-[#1a62ff] hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        }`}
+        onClick={handleButtonClick}
+        disabled={isButtonDisabled}
+        className={`w-full py-3.5 rounded-xl font-semibold text-sm shadow-sm transition ${className}`}
       >
-        {isBorrowed
-          ? "Borrowed"
-          : isPending || isCheckingStatus
-          ? "Loading..."
-          : !user
-          ? "Log in to Borrow"
-          : "Borrow This Book"}
+        {label}
       </button>
 
       {isModalOpen && (
@@ -182,10 +248,9 @@ useEffect(() => {
                   </label>
                   <input
                     type="date"
-                    required
+                    readOnly
                     value={borrowDate}
-                    onChange={(e) => setBorrowDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none cursor-not-allowed"
                   />
                 </div>
 

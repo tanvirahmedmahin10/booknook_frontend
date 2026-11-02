@@ -3,8 +3,24 @@ import { IBook, IParams } from '@/app/all-books/[bookId]/page';
 import { notFound } from 'next/navigation';
 import BorrowBooksList from '@/app/Components/BorrowBooksList';
 
+export const metadata = { title: 'My Borrows' };
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const safeDecode = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const Page = async ({ params }: IParams) => {
   const { bookId } = await params;
+  const email = safeDecode(bookId);
+  
+    if (!EMAIL_REGEX.test(email)) {
+      notFound();
+    }
   let books: IBook[] = [];
 
   try {

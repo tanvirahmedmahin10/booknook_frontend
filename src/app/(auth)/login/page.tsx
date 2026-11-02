@@ -1,107 +1,79 @@
-'use client'
+"use client";
+
 import React, { useState } from "react";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-
+import toast from "react-hot-toast";
 
 export default function SignInForm() {
-    const router=useRouter()
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [error, setError] = useState("");
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+  const rawCallbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : "/";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
-    try {
-      const { error: authError } = await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
-        rememberMe: formData.rememberMe,
-      });
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get("email"));
+    const password = String(formData.get("password"));
+    const rememberMe = formData.get("rememberMe") === "on";
 
-      if (authError) {
-        setError(authError.message || "Failed to sign in");
-        setLoading(false);
-        return;
-      }
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe,
+    });
 
-      router.push('/')
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
-    } finally {
+    if (error) {
       setLoading(false);
+      toast.error(error.message || "Failed to log in");
+      return;
     }
+
+    toast.success("Successfully logged in!");
+
+    // Hard redirect guarantees the browser commits the session cookie before hitting the protected route
+    window.location.href = callbackUrl;
   };
 
   const handleGoogleSignIn = async () => {
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-      });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to sign in with Google");
-      }
-    }
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: callbackUrl,
+    });
+    if (error) toast.error(error.message || "Failed to sign in with Google");
   };
 
   return (
     <div className="min-h-[calc(100vh-6rem)] bg-slate-50/50 flex flex-col items-center justify-center p-4">
-
       <div className="text-center mb-8">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           Welcome Back
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Resume your adventure with Wanderlust
+          Resume your adventure with BookNook
         </p>
       </div>
 
       <div className="w-full max-w-md bg-white rounded-xl border border-slate-200/80 shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
-              {error}
-            </div>
-          )}
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
               Email Address
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Mail className="w-4 h-4" />
-              </span>
+              <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="email"
                 name="email"
                 required
-                value={formData.email}
-                onChange={handleChange}
                 placeholder="Enter your email"
-                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
               />
             </div>
           </div>
@@ -111,17 +83,13 @@ export default function SignInForm() {
               Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Lock className="w-4 h-4" />
-              </span>
+              <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="password"
                 name="password"
                 required
-                value={formData.password}
-                onChange={handleChange}
                 placeholder="Enter your password"
-                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
               />
             </div>
           </div>
@@ -131,24 +99,22 @@ export default function SignInForm() {
               <input
                 type="checkbox"
                 name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                className="w-4 h-4 rounded border-slate-300 text-[#0891b2] focus:ring-[#0891b2]"
+                className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-600"
               />
               <span className="text-slate-600">Remember me</span>
             </label>
-            <a
+            <Link
               href="/forgot-password"
-              className="text-[#0891b2] hover:underline font-medium"
+              className="text-cyan-600 hover:underline font-medium"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-2.5 px-4 bg-[#0891b2] hover:bg-[#0e7490] text-white font-medium text-sm rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0891b2] disabled:opacity-50 flex items-center justify-center"
+            className="w-full mt-2 py-2.5 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
           </button>
@@ -167,7 +133,7 @@ export default function SignInForm() {
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium text-sm rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium text-sm rounded-lg transition-colors shadow-sm"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -187,18 +153,18 @@ export default function SignInForm() {
                 d="M12 4.75c1.76 0 3.34.61 4.59 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0 7.24 0 3.16 2.64 1.2 6.61l4.08 3.15c.95-2.84 3.6-4.95 6.72-4.95z"
               />
             </svg>
-            Sign Up With Google
+            Login With Google
           </button>
 
-          <div className="text-center mt-6 text-sm text-slate-500">
+          <p className="text-center mt-6 text-sm text-slate-500">
             Don&apos;t have an account?{" "}
-            <a
-              href="/register"
-              className="text-[#0891b2] hover:underline font-medium"
+            <Link
+              href={`/register${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+              className="text-cyan-600 hover:underline font-medium"
             >
               Register
-            </a>
-          </div>
+            </Link>
+          </p>
         </form>
       </div>
     </div>
