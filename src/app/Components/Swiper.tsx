@@ -13,7 +13,7 @@ export default function BookSliderClient({ slides }: { slides: IBook[] }) {
   if (!slides || slides.length === 0) return null;
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8">
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={30}
