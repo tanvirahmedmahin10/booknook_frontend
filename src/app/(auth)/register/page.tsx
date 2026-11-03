@@ -66,7 +66,7 @@ export default function SignupForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
-              Full Name
+              Full Name<span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -82,7 +82,7 @@ export default function SignupForm() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
-              Email Address
+              Email Address<span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -113,7 +113,7 @@ export default function SignupForm() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
-              Password
+              Password<span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -132,7 +132,7 @@ export default function SignupForm() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
-              Confirm Password
+              Confirm Password<span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
