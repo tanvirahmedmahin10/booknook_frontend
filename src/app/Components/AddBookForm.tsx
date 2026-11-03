@@ -114,7 +114,7 @@ const AddBookForm = () => {
       };
   
   const token=await getTokenFromClient()
-      const response = await fetch("http://localhost:8000/all-books", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/all-books`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

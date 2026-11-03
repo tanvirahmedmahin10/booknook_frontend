@@ -35,7 +35,7 @@ const DetailsPage = async ({ params }: IParams) => {
   let bookDetails: IBook | null = null;
 const token=await getTokenFromServer()
   try {
-    const res = await fetch(`http://localhost:8000/all-books/${bookId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/all-books/${bookId}`, {
   cache: "no-store",
   headers: {
     authorization: `Bearer ${token}`,

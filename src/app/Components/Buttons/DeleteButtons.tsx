@@ -38,7 +38,7 @@ const DeleteButtons = ({ book }: { book: IBook }) => {
   const token = await getTokenFromClient();
 
   const res = await fetch(
-    `http://localhost:8000/my-books/${encodeURIComponent(user?.email ?? '')}/${book._id}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/my-books/${encodeURIComponent(user?.email ?? '')}/${book._id}`,
     {
       method: 'DELETE',
       headers: {

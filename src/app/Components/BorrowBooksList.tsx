@@ -27,7 +27,7 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
     setReturningId(targetId as string);
 
     try {
-      const res = await fetch(`http://localhost:8000/my-borrows/${book.user_email}/${targetId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-borrows/${book.user_email}/${targetId}`, {
         method: 'DELETE',
       });
 

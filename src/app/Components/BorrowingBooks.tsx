@@ -47,7 +47,7 @@ const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
 
       try {
         const res = await fetch(
-          `http://localhost:8000/my-borrows/${encodeURIComponent(user.email)}/${bookId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/my-borrows/${encodeURIComponent(user.email)}/${bookId}`
         );
         if (res.ok) {
           const result = await res.json();
@@ -124,7 +124,7 @@ const BorrowingBooks = ({ bookDetails }: BorrowingBooksProps) => {
     };
 
     try {
-      const res = await fetch(`http://localhost:8000/my-borrows`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-borrows`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
