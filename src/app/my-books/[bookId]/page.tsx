@@ -2,6 +2,7 @@ import { IBook, IParams } from '@/app/all-books/[bookId]/page';
 import MyBooksList from '@/app/Components/MyBooksList';
 import EmptyBooks from '@/app/Components/EmptyBooks';
 import { notFound } from 'next/navigation';
+import { getTokenFromServer } from '@/lib/getTokenFromServer';
 
 export const metadata = { title: 'My Books' }; 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,10 +26,14 @@ const Page = async ({ params }: IParams) => {
   }
 
   let books: IBook[] = [];
-
+const token=await getTokenFromServer()
   const res = await fetch(
     `http://localhost:8000/my-books/${encodeURIComponent(email)}`,
-    { cache: 'no-store' }
+    { cache: 'no-store' ,
+      headers: {
+    authorization: `Bearer ${token}`,
+  }, },
+   
   );
 
   if (res.ok) {

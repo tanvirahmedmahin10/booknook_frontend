@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
+import { getTokenFromClient } from '@/lib/getTokenFromClient';
 
 const DeleteButtons = ({ book }: { book: IBook }) => {
   const { data: session, isPending } = authClient.useSession();
@@ -34,13 +35,17 @@ const DeleteButtons = ({ book }: { book: IBook }) => {
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
+  const token = await getTokenFromClient();
 
-      const res = await fetch(
-        `http://localhost:8000/my-books/${encodeURIComponent(user?.email ?? '')}/${book._id}`,
-        {
-          method: 'DELETE',
-        }
-      );
+  const res = await fetch(
+    `http://localhost:8000/my-books/${encodeURIComponent(user?.email ?? '')}/${book._id}`,
+    {
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
       if (!res.ok) {
         throw new Error('Failed to delete book');

@@ -2,6 +2,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Star, Calendar, Layers } from "lucide-react";
 import BorrowingBooks from "@/app/Components/BorrowingBooks";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 export interface IParams {
   params: Promise<{
@@ -30,12 +33,12 @@ const DetailsPage = async ({ params }: IParams) => {
   const { bookId } = await params;
 
   let bookDetails: IBook | null = null;
-
+const token=await getTokenFromServer()
   try {
     const res = await fetch(`http://localhost:8000/all-books/${bookId}`, {
   cache: "no-store",
   headers: {
-    authorization: "user logged in",
+    authorization: `Bearer ${token}`,
   },
 });;
 

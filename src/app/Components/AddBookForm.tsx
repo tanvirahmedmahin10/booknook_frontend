@@ -17,6 +17,7 @@ import {
 import { Trash2, BookPlus, Loader2, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const AddBookForm = () => {
   const router = useRouter();
@@ -111,11 +112,13 @@ const AddBookForm = () => {
         user_name: user?.name || "Anonymous",
         user_email: user?.email || "",
       };
-
+  
+  const token=await getTokenFromClient()
       const response = await fetch("http://localhost:8000/all-books", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${token}`
         },
         body: JSON.stringify(bookPayload),
       });

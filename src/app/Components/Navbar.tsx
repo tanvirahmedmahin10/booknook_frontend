@@ -145,7 +145,7 @@ const Navbar = () => {
                     </div>
 
                     <Link
-                      href={`/my-books/${user.email}`}
+                      href={`/myprofile`}
                       onClick={closeMenu}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >

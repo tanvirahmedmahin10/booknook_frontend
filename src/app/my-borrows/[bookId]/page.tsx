@@ -2,6 +2,7 @@ import { IBook, IParams } from '@/app/all-books/[bookId]/page';
 
 import { notFound } from 'next/navigation';
 import BorrowBooksList from '@/app/Components/BorrowBooksList';
+import { getTokenFromServer } from '@/lib/getTokenFromServer';
 
 export const metadata = { title: 'My Borrows' };
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,10 +23,13 @@ const Page = async ({ params }: IParams) => {
       notFound();
     }
   let books: IBook[] = [];
-
+ const token=await getTokenFromServer()
   try {
     const res = await fetch(`http://localhost:8000/my-borrows/${bookId}`, {
       cache: 'no-store',
+      headers: {
+    authorization: `Bearer ${token}`,
+  }
     });
 
     if (!res.ok) {
