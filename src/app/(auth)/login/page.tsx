@@ -116,7 +116,7 @@ export default function SignInForm() {
             disabled={loading}
             className="w-full mt-2 py-2.5 px-4 bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
           </button>
 
           <div className="relative my-6">

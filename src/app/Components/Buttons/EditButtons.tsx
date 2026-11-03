@@ -39,7 +39,7 @@ const getInitialFormData = (book: IBook) => ({
   category: book?.category ?? "",
   published_year: book?.published_year ?? new Date().getFullYear(),
   price: book?.price !== undefined ? String(book.price) : "",
-  copies: book?.in_stock !== undefined ? String(book.in_stock) : "1",
+  total_copies: book?.total_copies !== undefined ? String(book.total_copies) : "1",
   rating: book?.rating ?? 4.5,
   cover_image: book?.cover_image ?? "",
   description: book?.description ?? "",
@@ -101,17 +101,16 @@ const EditButtons = ({ book, onBookUpdated }: EditButtonsProps) => {
       }
 
       const bookPayload = {
-        title: formData.title,
-        author: formData.author,
-        category: formData.category,
-        published_year: Number(formData.published_year),
-        rating: Number(formData.rating),
-        price: Number(formData.price),
-        copies: Number(formData.copies),
-        cover_image: finalImageUrl,
-        description: formData.description,
-      };
-
+  title: formData.title,
+  author: formData.author,
+  category: formData.category,
+  published_year: Number(formData.published_year),
+  rating: Number(formData.rating),
+  price: Number(formData.price),
+  total_copies: Number(formData.total_copies),
+  cover_image: finalImageUrl,
+  description: formData.description,
+};
       const token = await getTokenFromClient();
       const res = await fetch(
         `http://localhost:8000/my-books/${encodeURIComponent(user.email)}/${book._id}`,
@@ -250,20 +249,20 @@ const EditButtons = ({ book, onBookUpdated }: EditButtonsProps) => {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="copies" className="text-xs font-semibold text-slate-700">
-                Available Copies
-              </Label>
-              <Input
-                id="copies"
-                name="copies"
-                type="number"
-                min="0"
-                required
-                value={formData.copies}
-                onChange={handleChange}
-                className="bg-slate-50 border-slate-200 focus-visible:ring-teal-500 text-sm h-10 w-full"
-              />
-            </div>
+  <Label htmlFor="total_copies" className="text-xs font-semibold text-slate-700">
+    Available Copies
+  </Label>
+  <Input
+    id="total_copies"
+    name="total_copies"
+    type="number"
+    min="0"
+    required
+    value={formData.total_copies}
+    onChange={handleChange}
+    className="bg-slate-50 border-slate-200 focus-visible:ring-teal-500 text-sm h-10 w-full"
+  />
+</div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cover_image" className="text-xs font-semibold text-slate-700">

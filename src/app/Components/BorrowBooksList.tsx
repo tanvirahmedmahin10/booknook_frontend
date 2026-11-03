@@ -123,13 +123,13 @@ export default function BorrowBooksList({ borrowedBooks = [], onReturnSuccess }:
                             )}
                           </div>
                           <div>
-                            <Link
-                              href={`/all-books/${book._id}`}
+                            <div
+                              
                               className="font-bold text-slate-900 hover:text-indigo-600 transition-colors line-clamp-1"
                               title={book.title}
                             >
                               {book.title}
-                            </Link>
+                            </div>
                             <p className="text-xs text-slate-500 mt-0.5">
                               By <span className="text-slate-700">{book.author}</span>
                             </p>

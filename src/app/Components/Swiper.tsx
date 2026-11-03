@@ -42,7 +42,7 @@ export default function BookSliderClient({ slides }: { slides: IBook[] }) {
                 </p>
                 <Link
                   href="/all-books"
-                  className="inline-block bg-primary hover:bg-primary-focus text-white font-medium px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-primary/25"
+                  className="inline-block bg-blue-700 hover:bg-primary-focus text-white font-medium px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-primary/25"
                 >
                   Browse Books
                 </Link>
