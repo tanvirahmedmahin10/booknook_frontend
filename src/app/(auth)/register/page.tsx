@@ -98,22 +98,19 @@ export default function SignupForm() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
-              Photo URL{" "}
-              <span className="text-xs text-slate-400 font-normal">
-                (Optional)
-              </span>
+              Photo URL <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="url"
                 name="image"
+                required
                 placeholder="https://example.com/avatar.jpg"
                 className={INPUT_STYLES}
               />
             </div>
           </div>
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-900 block">
               Password
